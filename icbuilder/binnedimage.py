@@ -8,9 +8,7 @@ from secsy import CSgrid
 from copy import deepcopy as dcopy
 from scipy.stats import t, chi2
 from scipy.interpolate import griddata
-
-os.chdir('/Home/siv32/mih008/repos/icAurora/scripts')
-from preimage import PreImage
+from .preimage import PreImage
 
 #%% BinnedImage class
 

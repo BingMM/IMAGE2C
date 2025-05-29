@@ -1,4 +1,8 @@
+#%% Import 
+
 import numpy as np
+
+#%% Conductance fun
 
 def ped(x1,x2):
     """
@@ -101,72 +105,3 @@ def halluncertainty(x1,x2,dx1,dx2,varx1x2):
                         + 18**2 * x1**(2.7) / denom**2 * (1.85 - 2*x1**2/denom) * varx1x2 )
 
     return dSigmah, dSigmah2
-
-#E0,eflux,sigE0,sigeflux,varE0eflux):
-
-if __name__ == '__main__':
-    
-    E0,dE0 = 5,1
-    eflux,deflux = 2,0.5
-    varE0eflux = 0
-    
-    p = ped(E0,eflux)
-    h = hall(E0,eflux)
-
-    dp, dp2 = peduncertainty(E0,eflux,dE0,deflux,varE0eflux)
-    dh, dh2 = halluncertainty(E0,eflux,dE0,deflux,varE0eflux)
-
-    print("INPUTS")
-    print("======")
-    print("{:20s} [{:8s}]: {:10.1f} ± {:5.1f}".format("E0","keV",E0,dE0))
-    print("{:20s} [{:8s}]: {:10.1f} ± {:5.1f}".format("eflux","erg/cm²",eflux,deflux))
-    print("")
-    print("OUTPUTS")
-    print("=======")
-    print("{:20s} [{:8s}]: {:10.1f} ± {:12.8f}".format("SigmaP(alt1)","S",p,dp))
-    print("{:20s} [{:8s}]: {:10.1f} ± {:12.8f}".format("SigmaP(alt2)","S",p,dp2))
-    print("")
-    print("{:20s} [{:8s}]: {:10.1f} ± {:12.8f}".format("SigmaH(alt1)","S",h,dh))
-    print("{:20s} [{:8s}]: {:10.1f} ± {:12.8f}".format("SigmaH(alt2)","S",h,dh2))
-
-    
-def E_and_uncertainty(je, jn, sigp, sigh, dsigp, dsigh):
-    """
-    je, jn, sigp, and sigh all in SI units (A/m for current, mhos for conductance)
-    
-    """
-
-    sigtotsq = sigp**2+sigh**2
-    Ee = ( sigp * je - sigh * jn ) / sigtotsq
-    En = ( sigp * jn + sigh * je ) / sigtotsq
-
-    # Derivative of eastward E-field component wrt Sigma_P
-    dEe_dsigp =  je / sigtotsq * (1 - 2 * (sigp/sigtot)**2 )
-    dEn_dsigp =  jn / sigtotsq * (1 - 2 * (sigp/sigtot)**2 )
-    
-    dEe_dsigh = -jn / sigtotsq * (1 - 2 * (sigh/sigtot)**2 )
-    dEn_dsigh =  je / sigtotsq * (1 - 2 * (sigh/sigtot)**2 )
-
-    DEe = np.sqrt( (dEe_dsigp * dsigp)**2 + (dEe_dsigh * dsigh)**2)
-    DEn = np.sqrt( (dEn_dsigp * dsigp)**2 + (dEn_dsigh * dsigh)**2)
-
-    return Ee, En, DEe, DEn
-
-def v_and_uncertainty(je, jn, sigp, sigh, dsigp, dsigh,
-                      B0=5e-5):
-    """
-    je, jn, sigp, sigh, and B0 all in SI units (A/m for current, mhos for conductance)
-    
-    B0 is, by default, 50,000 nT
-    """
-
-    Ee, En, DEe, DEn = E_and_uncertainty(je, jn, sigp, sigh, dsigp, dsigh)
-
-    ve = -En * B0
-    vn =  Ee * B0
-
-    Dve = np.sqrt((B0*DEn)**2)
-    Dvn = np.sqrt((B0*DEe)**2)
-
-    return ve, vn, Dve, Dvn
-

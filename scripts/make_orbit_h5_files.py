@@ -1,8 +1,6 @@
 #%% Import
 
-import numpy as np
 import pandas as pd
-import fuvpy as fuv
 import glob
 
 #%% Premade orbit file from WIC, not complete list only published corrected data

@@ -6,7 +6,7 @@ from typing import Union, Optional
 from numpy.typing import NDArray
 from secsy import CSgrid
 
-#%% Storage for the orbit file
+#%% Class for storing orbit files
 
 class PreImage:
     __slots__ = ("mlat", "mlon", "glat", "glon", "dgimg", "shimg", "dgmodel", "shape", "index")

@@ -1,19 +1,18 @@
-import os
+#%% Import
+
 import numpy as np
 from typing import Union, Optional
-from numpy.typing import NDArray
 from secsy import CSgrid, CSprojection
 from copy import deepcopy as dcopy
 from scipy.io import netcdf_file
 from datetime import datetime, timedelta
 
 # External dependencies
-os.chdir('/Home/siv32/mih008/repos/icAurora/scripts')
-import imagesat_e0_eflux_estimates as conFun
-from robinson import ped, hall, peduncertainty, halluncertainty
-from binnedimage import BinnedImage
+from .imagesat_e0_eflux_estimates import E0_eflux_propagated as EF_fun
+from .robinson import ped, hall, peduncertainty, halluncertainty
+from .binnedimage import BinnedImage
 
-#%%
+#%% Conductance Image class
 
 class ConductanceImage:
     def __init__(
@@ -93,9 +92,9 @@ class ConductanceImage:
         
         if np.all(~np.isnan(counts)) and np.all(~np.isnan(uncertainties)):
             
-            E0, Fe, dE0, dFe, R, dR = conFun.E0_eflux_propagated(counts, dayglow, 
-                                                                 uncertainties, 
-                                                                 self.Ep, self.dEp)
+            E0, Fe, dE0, dFe, R, dR = EF_fun(counts, dayglow, uncertainties, 
+                                             self.Ep, self.dEp)
+            
             self.E0[i, j, k], self.dE0[i, j, k] = E0, dE0
             self.Fe[i, j, k], self.dFe[i, j, k] = Fe, dFe
             self.R[i, j, k],  self.dR[i, j, k]  = R,  dR 

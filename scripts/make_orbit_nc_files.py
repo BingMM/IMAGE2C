@@ -4,7 +4,7 @@ import os
 import fuvpy as fuv
 import pandas as pd
 import numpy as np
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool
 
 #%% What data to process
 
@@ -55,7 +55,6 @@ def background_removal_parallel(files, inpath, outpath, reflat=False):
     orbits = files['orbit'].unique()
     args_list = [(orbit, files, inpath, outpath, reflat, file_prefix) for orbit in orbits]
 
-    #with Pool(cpu_count() // 2) as pool: # Too RAM heavy if run on all cores
     with Pool(10) as pool: # 500 GB RAM. Max 33 GB per orbit, I think. Max 15 process
         results = pool.starmap(process_single_orbit, args_list)
 
@@ -99,54 +98,6 @@ def background_removal(files, inpath, outpath, reflat=False, parallel=True):
     else:
         return background_removal_serial(files, inpath, outpath, reflat)
 
-
-#%% function
-'''
-def background_removal(files, inpath, outpath, reflat=False):
-    #'
-    Background removal per orbit
-    
-    Parameters
-    ----------
-    files (dataframe) : Pandas dataframe containing orbit numbers and filenames
-    inpath (str) : Path to the files listed in files
-    outpath (str) : Path to save the corrected images per orbit
-    
-    Returns
-    -------
-    avail_orbit (array) : 2D array where the first column is orbit number and the second column is either 0 or 1.
-                           0 indicates that there was no data, therefore, no orbitfile was made. 1 is the opposite. 
-                           If -1 the code failed.
-    #''
-    avail_orbit = np.ones((files['orbit'].unique().size, 2))
-    avail_orbit[:, 0] = files['orbit'].unique()
-    file_prefix = files['filename'][0][:3]
-    for i, orbit in enumerate(files['orbit'].unique()):
-        print('Starting on orbit {}'.format(orbit))
-        try:
-            # Load all files
-            s = fuv.read_idl((inpath + files.loc[files['orbit']==orbit, 'filename']).tolist(), dzalim=75, reflat=reflat) # Load
-            # Remove southern hemisphere data   
-            s = s.sel(date=s.hemisphere.date[s.hemisphere=='north']) # Remove SH
-            # Save the first timestep for correct dating later
-            s = s.assign({'t_start': np.datetime_as_string(s['date'][0], unit='s')})
-            # Check for empty orbits
-            if np.all(np.isnan(s['mlat'].values)):
-                avail_orbit[i, 1] = 0
-                print('Skipping orbit, no data')
-                continue
-            # Background stuff
-            s = fuv.backgroundmodel_BS(s, sKnots=[-3.5,-0.25,0,0.25,1.5,3.5], stop=0.01, 
-                                       n_tKnots=5, tukeyVal=5, dampingVal=1e-3)
-            s = fuv.backgroundmodel_SH(s, 4, 4, n_tKnots=5, stop=0.01, tukeyVal=5, 
-                                       dampingVal=1e-4)
-            # Save netcdf file
-            s.to_netcdf(outpath + file_prefix + '_or' + str(orbit).zfill(4)+'.nc', format='NETCDF3_64BIT', engine='scipy')
-        except:
-            avail_orbit[i, 1] = -1
-            print('{} : {} : no work'.format(file_prefix, orbit))
-    return avail_orbit
-'''
 #%% Run WIC
 if do_wic:
     inpath = '/Data/ift/ift_romfys1/IMAGE_FUV/wic/'

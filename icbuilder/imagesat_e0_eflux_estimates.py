@@ -1,6 +1,8 @@
+#%% Import 
 import numpy as np
 from scipy.interpolate import interp1d,UnivariateSpline
 
+#%% Predefined things
 
 PE = np.array([0.47,2.00,8.00,25.0,46.7])  # Proton characteristic energy (keV)
 P1 = np.array([145,319,554,601,562])       # WIC counts in response to 1 mW/m² proton energy flux, Table V
@@ -57,6 +59,8 @@ if use_interp1d:
 # dg_w  : dayglow model for WIC
 # Cpw   : proton counts predicted from SI-12
 fFe = lambda wprime, wm: wprime/wm
+
+#%% Support functions
 
 def fdFe(wprime, wm, dwprime, dwm):
     return np.sqrt( (dwprime/wm)**2 + (wprime*dwm/wm**2)**2 )
@@ -219,13 +223,9 @@ def fdR(Wprime,Sprime,dWprime,dSprime):
 
     return np.sqrt( (dWprime / Sprime)**2 + (Wprime*dSprime/Sprime**2)**2 )
 
-##############################
-## Put it all together
 
-# def E0_propagated(W,dayglow_wic,ddayglow_wic,
-#                   S,dayglow_si13,ddayglow_si13
-#                   T,dayglow_T,ddayglow_T,
-#                   Ep,dEp):
+#%% Final form
+
 def E0_eflux_propagated(counts_list,
                         dayglowcounts_list,
                         dayglowcounts_unc,
