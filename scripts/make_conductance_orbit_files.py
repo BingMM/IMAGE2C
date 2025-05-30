@@ -143,11 +143,9 @@ def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, paral
     
     print(f'Pulling WIC data from {p_wic_nc}')
     print(f'Pulling SI12 data from {p_s12_nc}')
-    print(f'Pulling SI13 data from {p_s13_nc}')
+    print(f'Pulling SI13 data from {p_s13_nc}\n')
     
-    print(f'Outputting conductance objects in {p_out}')
-    
-    print(f'Looping over a total of {len(list(o))} orbits')
+    print(f'Outputting conductance objects in {p_out}\n')
     
     func = partial(process_orbit, **kwargs)
     
@@ -162,7 +160,7 @@ def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, paral
 
 #%% Paths
 
-base = '/Home/siv32/mih008/repos/icBulder/example_data/'
+base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
 
 p_wic_nc = base + 'wic/'
 p_s12_nc = base + 's12/'
@@ -177,14 +175,23 @@ o_wic = [int(o[-7:-3]) for o in sorted(glob.glob(p_wic_nc + '*.nc'))]
 o_s12 = [int(o[-7:-3]) for o in sorted(glob.glob(p_s12_nc + '*.nc'))]
 o_s13 = [int(o[-7:-3]) for o in sorted(glob.glob(p_s13_nc + '*.nc'))]
 
-print(f'Found {o_wic}')
-print(f'Found {o_s12}')
-print(f'Found {o_s13}')
-
 # Insert code that loads .npy orbit flags and discard orbits without flag=1
+wic_avail = np.load(base + 'wic_avail_orbit.npy')
+s12_avail = np.load(base + 's12_avail_orbit.npy')
+s13_avail = np.load(base + 's13_avail_orbit.npy')
+
+print(f'WIC: {wic_avail.shape[0]} nc files found. {int(np.sum(wic_avail[:, 1]==1))} orbits useable.')
+print(f'S12: {s12_avail.shape[0]} nc files found. {int(np.sum(s12_avail[:, 1]==1))} orbits useable.')
+print(f'S13: {s13_avail.shape[0]} nc files found. {int(np.sum(s13_avail[:, 1]==1))} orbits useable.\n')
+
+o_wic = [ow for ow, keep in zip(o_wic, wic_avail[:, 1] == 1) if keep]
+o_s12 = [ow for ow, keep in zip(o_s12, s12_avail[:, 1] == 1) if keep]
+o_s13 = [ow for ow, keep in zip(o_s13, s13_avail[:, 1] == 1) if keep]
 
 # Create list of all overlapping orbits
 o = set(o_wic) & set(o_s12) & set(o_s13)
+
+print(f'There are {len(list(o))} common orbtis between WIC, S12, and S13\n')
 
 #%% Define grids
 
@@ -204,7 +211,7 @@ Lres = dist / steps
 grid_s = CSgrid(CSprojection(position, orientation), L, L, Lres, Lres, edges = (xi_e, eta_e), R = 6481.2e3)
 print('Fine grid resolution is: ' + str(grid_w.Lres/1e3) + ' km')
 print('Coarse grid target resolution is: ' + str(target_Lres/1e3) + ' km')
-print('Coarse grid resolution is: ' + str(np.round(Lres/1e3, 2)) + ' km')
+print('Coarse grid resolution is: ' + str(np.round(Lres/1e3, 2)) + ' km\n')
 
 #%%
 
