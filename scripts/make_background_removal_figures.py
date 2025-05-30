@@ -11,13 +11,15 @@ import matplotlib.gridspec as gridspec
 
 #%% Paths
 
-p_wic_nc = '/disk/IMAGE_FUV/fuv/wic/'
-p_s12_nc = '/disk/IMAGE_FUV/fuv/s12/'
-p_s13_nc = '/disk/IMAGE_FUV/fuv/s13/'
+base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
 
-p_wic_out = '/disk/IMAGE_FUV/fuv/figures/wic_br/'
-p_s12_out = '/disk/IMAGE_FUV/fuv/figures/s12_br/'
-p_s13_out = '/disk/IMAGE_FUV/fuv/figures/s13_br/'
+p_wic_nc = base + 'wic/'
+p_s12_nc = base + 's12/'
+p_s13_nc = base + 's13/'
+
+p_wic_out = base + 'figures/wic_br/'
+p_s12_out = base + 'figures/s12_br/'
+p_s13_out = base + 'figures/s13_br/'
 
 #%% Fetch orbits available in all nc files
 
