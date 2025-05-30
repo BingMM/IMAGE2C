@@ -5,7 +5,7 @@ import glob
 
 #%% Base
 
-base = '/Home/siv32/mih008/repos/icBulder/example_data/'
+base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
 
 #%% Premade orbit file from WIC, not complete list only published corrected data
 
