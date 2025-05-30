@@ -9,12 +9,11 @@ from datetime import datetime, timedelta
 import apexpy
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map  # tqdm-compatible multiprocessing
-
-os.chdir('/Home/siv32/mih008/repos/icBuilder/scripts')
-from preimage import PreImage
-from binnedimage import BinnedImage
-from conductanceimage import ConductanceImage
 from functools import partial
+
+from icbuilder import PreImage
+from icbuilder import BinnedImage
+from icbuilder import ConductanceImage
 
 #%% Fun
 
