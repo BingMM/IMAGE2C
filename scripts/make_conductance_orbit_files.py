@@ -141,6 +141,14 @@ def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, paral
             'f_thres': 0.1
             }
     
+    print(f'Pulling WIC data from {p_wic_nc}')
+    print(f'Pulling SI12 data from {p_s12_nc}')
+    print(f'Pulling SI13 data from {p_s13_nc}')
+    
+    print(f'Outputting conductance objects in {p_out}')
+    
+    print(f'Looping over a total of {len(list(o))} orbits')
+    
     func = partial(process_orbit, **kwargs)
     
     if parallel:
