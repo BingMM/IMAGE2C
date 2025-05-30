@@ -2,10 +2,9 @@
 
 import numpy as np
 from typing import Union, Optional
-from secsy import CSgrid, CSprojection
 from copy import deepcopy as dcopy
 from scipy.io import netcdf_file
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # External dependencies
 from .imagesat_e0_eflux_estimates import E0_eflux_propagated as EF_fun
@@ -143,24 +142,3 @@ class ConductanceImage:
                 nc.W = self.grid.W
                 nc.Lres = self.grid.Lres
                 nc.Wres = self.grid.Wres
-
-    def load_nc(self, filename: str):
-        with netcdf_file(filename, 'r') as nc:
-            def load_var(name):
-                return np.copy(nc.variables[name][:])
-
-            for attr in ["E0", "dE0", "Fe", "dFe", "R", "dR", "P", "H", "dP", "dH", "dP2", "dH2"]:
-                setattr(self, attr, load_var(attr))
-
-            self.Ep = float(nc.Ep)
-            self.dEp = float(nc.dEp)
-            self._shape = self.E0.shape
-
-            if "time" in nc.variables:
-                ref = datetime.strptime(nc.reference_time.decode(), "%Y-%m-%dT%H:%M:%S")
-                self.time = np.array([ref + timedelta(seconds=int(s)) for s in nc.variables["time"][:]])
-
-            self.grid = CSgrid(
-                CSprojection(nc.position, nc.orientation),
-                nc.L, nc.W, nc.Lres, nc.Wres
-                )
