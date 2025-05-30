@@ -8,11 +8,11 @@ from multiprocessing import Pool
 
 #%% What data to process
 
-do_wic = False
-do_s12 = False
+do_wic = True
+do_s12 = True
 do_s13 = True
 
-parallel = True
+parallel = False
 
 print(f'Settings:\n WIC: {do_wic}\n SI12: {do_s12}\n SI13: {do_s13}\n Parallel: {parallel}')
 
@@ -118,7 +118,7 @@ if do_wic:
 
 #%% Run s12
 if do_s12:
-    inpath  = base + 'si12_data/'
+    inpath  = base + 's12_data/'
     outpath = base + 's12/'
 
     print('Starting work on SI12')
@@ -129,7 +129,7 @@ if do_s12:
 
 #%% Run s13
 if do_s13:
-    inpath  = base + 'si13_data/'
+    inpath  = base + 's13_data/'
     outpath = base + 's13/'
 
     print('Starting work on SI13')
