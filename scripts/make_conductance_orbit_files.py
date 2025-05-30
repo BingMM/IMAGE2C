@@ -63,7 +63,7 @@ def safe_apex_convert(apex, glat_row, glon_row, height=120):
         mlon[valid] = mlon_valid
     return mlat, mlon
 
-def process_orbit(orbit, p_wic_nc, p_s12_nc, p_s13_nc, grid_w, grid_s, f_thres=0.1):
+def process_orbit(orbit, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, f_thres=0.1):
     try:
         # Load nc orbit files
         wic_nc = netcdf_file(p_wic_nc + f'wic_or{orbit:04d}.nc', 'r')
@@ -124,18 +124,19 @@ def process_orbit(orbit, p_wic_nc, p_s12_nc, p_s13_nc, grid_w, grid_s, f_thres=0
         cI = ConductanceImage(wic_bI, s12_bI, s13_bI, time=t)
         
         # Save to netCDF
-        out_path = f'/Home/siv32/mih008/repos/icBulder/example_data/conductance/or_{orbit:04d}.nc'
+        out_path = f'{p_out}or_{orbit:04d}.nc'
         cI.to_nc(out_path)
         return orbit  # Success
     except Exception as e:
         return f"Failed orbit {orbit}: {e}"
 
-def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, grid_w, grid_s, parallel=True, n_processes=None):
+def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=True, n_processes=None):
 
     kwargs = {
             'p_wic_nc': p_wic_nc,
             'p_s12_nc': p_s12_nc,
             'p_s13_nc': p_s13_nc,
+            'p_out': p_out,
             'grid_w': grid_w,  # must be defined in your namespace
             'grid_s': grid_s,  # must be defined in your namespace
             'f_thres': 0.1
@@ -154,9 +155,13 @@ def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, grid_w, grid_s, parallel=Tru
 
 #%% Paths
 
-p_wic_nc = '/Home/siv32/mih008/repos/icBulder/example_data/wic/'
-p_s12_nc = '/Home/siv32/mih008/repos/icBulder/example_data/s12/'
-p_s13_nc = '/Home/siv32/mih008/repos/icBulder/example_data/s13/'
+base = '/Home/siv32/mih008/repos/icBulder/example_data/'
+
+p_wic_nc = base + 'wic/'
+p_s12_nc = base + 's12/'
+p_s13_nc = base + 's13/'
+
+p_out = base + 'conductance/'
 
 #%% Fetch orbits available in all nc files
 
@@ -192,6 +197,7 @@ print('Coarse grid resolution is: ' + str(np.round(Lres/1e3, 2)) + ' km')
 
 #%%
 
-results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, grid_w, grid_s, parallel=True, n_processes=96)
+results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=False)
+#results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=True, n_processes=96)
 
 
