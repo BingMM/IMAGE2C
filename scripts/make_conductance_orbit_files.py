@@ -177,6 +177,10 @@ o_wic = [int(o[-7:-3]) for o in sorted(glob.glob(p_wic_nc + '*.nc'))]
 o_s12 = [int(o[-7:-3]) for o in sorted(glob.glob(p_s12_nc + '*.nc'))]
 o_s13 = [int(o[-7:-3]) for o in sorted(glob.glob(p_s13_nc + '*.nc'))]
 
+print(f'Found {o_wic}')
+print(f'Found {o_s12}')
+print(f'Found {o_s13}')
+
 # Insert code that loads .npy orbit flags and discard orbits without flag=1
 
 # Create list of all overlapping orbits
