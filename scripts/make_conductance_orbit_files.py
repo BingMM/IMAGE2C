@@ -10,7 +10,7 @@ import apexpy
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map  # tqdm-compatible multiprocessing
 
-os.chdir('/Home/siv32/mih008/repos/icAurora/scripts')
+os.chdir('/Home/siv32/mih008/repos/icBuilder/scripts')
 from preimage import PreImage
 from binnedimage import BinnedImage
 from conductanceimage import ConductanceImage
@@ -124,7 +124,7 @@ def process_orbit(orbit, p_wic_nc, p_s12_nc, p_s13_nc, grid_w, grid_s, f_thres=0
         cI = ConductanceImage(wic_bI, s12_bI, s13_bI, time=t)
         
         # Save to netCDF
-        out_path = f'/disk/IMAGE_FUV/fuv/conductance/or_{orbit:04d}.nc'
+        out_path = f'/Home/siv32/mih008/repos/icBulder/example_data/conductance/or_{orbit:04d}.nc'
         cI.to_nc(out_path)
         return orbit  # Success
     except Exception as e:
@@ -154,9 +154,9 @@ def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, grid_w, grid_s, parallel=Tru
 
 #%% Paths
 
-p_wic_nc = '/disk/IMAGE_FUV/fuv/wic/'
-p_s12_nc = '/disk/IMAGE_FUV/fuv/s12/'
-p_s13_nc = '/disk/IMAGE_FUV/fuv/s13/'
+p_wic_nc = '/Home/siv32/mih008/repos/icBulder/example_data/wic/'
+p_s12_nc = '/Home/siv32/mih008/repos/icBulder/example_data/s12/'
+p_s13_nc = '/Home/siv32/mih008/repos/icBulder/example_data/s13/'
 
 #%% Fetch orbits available in all nc files
 

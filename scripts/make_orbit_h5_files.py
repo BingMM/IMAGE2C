@@ -3,9 +3,13 @@
 import pandas as pd
 import glob
 
+#%% Base
+
+base = '/Home/siv32/mih008/repos/icBulder/example_data/'
+
 #%% Premade orbit file from WIC, not complete list only published corrected data
 
-orbit_dates = '/disk/IMAGE_FUV/fuv/orbitdates.csv'
+orbit_dates = base + 'orbitdates.csv'
 
 #%% Import orbit file
 
@@ -18,9 +22,10 @@ orbits['dt_end'] = pd.to_datetime(orbits['date_end'],format='%Y-%m-%d %H:%M:%S')
 
 #%% Path to SI12 and SI13
 
-wic_path = '/Data/ift/ift_romfys1/IMAGE_FUV/wic/'
-s12_path = '/Data/ift/ift_romfys1/IMAGE_FUV/si12_data/'
-s13_path = '/Data/ift/ift_romfys1/IMAGE_FUV/si13_data/'
+
+wic_path = base + 'wic_data/'
+s12_path = base + 's12_data/'
+s13_path = base + 's13_data/'
 
 #%% get file names
 
@@ -58,16 +63,16 @@ def generate_files_file(fn):
 
 print('Generating wic files file')
 df = generate_files_file(wic_fn)
-df.to_hdf('/disk/IMAGE_FUV/fuv/wicfiles.h5', key='data', mode='w')
+df.to_hdf(base + 'wicfiles.h5', key='data', mode='w')
 
 #%% s12
 
 print('Generating s12 files file')
 df = generate_files_file(s12_fn)
-df.to_hdf('/disk/IMAGE_FUV/fuv/s12files.h5', key='data', mode='w')
+df.to_hdf(base + 's12files.h5', key='data', mode='w')
 
 #%% s13
 
 print('Generating s13 files file')
 df = generate_files_file(s13_fn)
-df.to_hdf('/disk/IMAGE_FUV/fuv/s13files.h5', key='data', mode='w')
+df.to_hdf(base + 's13files.h5', key='data', mode='w')
