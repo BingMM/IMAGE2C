@@ -16,11 +16,18 @@ parallel = True
 
 print(f'Settings:\n WIC: {do_wic}\n SI12: {do_s12}\n SI13: {do_s13}\n Parallel: {parallel}')
 
+#%% Base
+
+base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
+
+print(f'Base set to {base}')
+
 #%% Import orbit files file 
 
-wicfiles = pd.read_hdf('/disk/IMAGE_FUV/fuv/wicfiles.h5', key='data')
-s12files = pd.read_hdf('/disk/IMAGE_FUV/fuv/s12files.h5', key='data')
-s13files = pd.read_hdf('/disk/IMAGE_FUV/fuv/s13files.h5', key='data')
+print('Reading h5 files')
+wicfiles = pd.read_hdf(base + 'wicfiles.h5', key='data')
+s12files = pd.read_hdf(base + 's12files.h5', key='data')
+s13files = pd.read_hdf(base + 's13files.h5', key='data')
 
 #%%
 
@@ -100,8 +107,8 @@ def background_removal(files, inpath, outpath, reflat=False, parallel=True):
 
 #%% Run WIC
 if do_wic:
-    inpath = '/Data/ift/ift_romfys1/IMAGE_FUV/wic/'
-    outpath = '/disk/IMAGE_FUV/fuv/wic/'
+    inpath  = base + 'wic_data/'
+    outpath = base + 'wic/'
 
     print('Starting work on WIC')
     print('Pulling data from: ' + inpath)
@@ -111,8 +118,8 @@ if do_wic:
 
 #%% Run s12
 if do_s12:
-    inpath = '/Data/ift/ift_romfys1/IMAGE_FUV/si12_data/'
-    outpath = '/disk/IMAGE_FUV/fuv/s12/'
+    inpath  = base + 'si12_data/'
+    outpath = base + 's12/'
 
     print('Starting work on SI12')
     print('Pulling data from: ' + inpath)
@@ -122,8 +129,8 @@ if do_s12:
 
 #%% Run s13
 if do_s13:
-    inpath = '/Data/ift/ift_romfys1/IMAGE_FUV/si13_data/'
-    outpath = '/disk/IMAGE_FUV/fuv/s13/'
+    inpath  = base + 'si13_data/'
+    outpath = base + 's13/'
 
     print('Starting work on SI13')
     print('Pulling data from: ' + inpath)
