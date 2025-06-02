@@ -1,6 +1,5 @@
 #%% Imports
 
-import os
 import numpy as np
 from typing import Union, Optional
 from numpy.typing import NDArray
@@ -13,12 +12,32 @@ from .preimage import PreImage
 #%% BinnedImage class
 
 class BinnedImage:
+    """
+    A class to bin IMAGE data onto a CSgrid.
+
+    This class processes a `PreImage` object and computes binned statistics
+    (median and standard deviation) for each grid cell, optionally inflating the
+    uncertainties or interpolating to a different grid.
+
+    Attributes
+    ----------
+    grid : CSgrid
+        The CSgrid to which data is binned (or interpolated).
+    counts : np.ndarray
+        Number of samples contributing to each grid cell.
+    mu : np.ndarray
+        Mean (median) of the binned values in each grid cell.
+    sigma : np.ndarray
+        Standard deviation of the values in each grid cell.
+    shape : tuple
+        Shape of the binned data arrays.
+    """
+    
     def __init__(self,
                  pI: PreImage,
                  grid: CSgrid,
                  target_grid: Optional[CSgrid] = None,
-                 inflate_uncertainty: bool = False,
-                 interpolate: bool = False
+                 inflate_uncertainty: bool = False
                  ):
         """
         Bin statistics from a PreImage object into a CSgrid.
@@ -26,15 +45,14 @@ class BinnedImage:
         Parameters
         ----------
         pI : PreImage
-            Input image data to bin.
+            Input IMAGE data to bin.
         grid : CSgrid
-            Grid to bin onto.
+            Cubbed sphere grid to bin onto.
         target_grid : CSgrid, optional
-            If provided, interpolate results onto this grid.
+            If provided, interpolate results onto this cubbed sphere grid.
         inflate_uncertainty : bool
             If True, inflates uncertainties using t and chi² statistics.
-        interpolate : bool
-            If True, interpolate binned results to the target grid.
+            Should be used when less than 30 counts per bin.
         """
         self.grid = dcopy(grid)
 
@@ -64,13 +82,23 @@ class BinnedImage:
         if inflate_uncertainty:
             self._inflate_uncertainty()
 
-        if interpolate and target_grid is not None:
+        if target_grid is not None:
             self._interpolate(target_grid)
 
     def _inflate_uncertainty(self, 
                              alpha_mean: float = 0.32, 
                              alpha_std: float = 0.32):
-        """Inflate the uncertainty using t and chi² distribution."""
+        """
+        Inflate the uncertainty estimates using Student's t-distribution
+        and the chi-squared distribution.
+
+        Parameters
+        ----------
+        alpha_mean : float
+            Confidence level for inflating the uncertainty on the mean. .32 = 68% = 1 std
+        alpha_std : float
+            Confidence level for inflating the standard deviation. .32 = 68% = 1 std
+        """
         for i in range(self.shape[0]):
             for j in range(self.shape[1]):
                 for k in range(self.shape[2]):
@@ -83,12 +111,16 @@ class BinnedImage:
                     std_inflation = self.sigma[i, j, k] * np.sqrt(df / chi2_lower)
                     self.sigma[i, j, k] = np.sqrt(mean_unc**2 + std_inflation**2)
 
-    def percent_full(self) -> NDArray[np.float_]:
-        """Returns the fraction of bins filled at each time step."""
-        return np.sum(self.counts != 0, axis=(1, 2)) / self.counts[0].size
+    def _interpolate(self, 
+                     target_grid: CSgrid):
+        """
+        Interpolate `mu` and `sigma` fields from the current grid to a new grid.
 
-    def _interpolate(self, target_grid: CSgrid):
-        """Interpolates mu and sigma to a new grid."""
+        Parameters
+        ----------
+        target_grid : CSgrid
+            The grid to interpolate onto.
+        """
         self.mu_ = np.copy(self.mu)
         self.sigma_ = np.copy(self.sigma)
 
@@ -115,7 +147,14 @@ class BinnedImage:
         self.grid = dcopy(target_grid)
 
     def discard(self, f: Union[list[int], NDArray[np.int_]]):
-        """Discard time steps not in f."""
+        """
+        Discard all time steps NOT listed in `f`.
+
+        Parameters
+        ----------
+        f : list[int] or NDArray[np.int_]
+            Indices of time steps to retain.
+        """
         self.counts = self.counts[f]
         self.mu = self.mu[f]
         self.sigma = self.sigma[f]

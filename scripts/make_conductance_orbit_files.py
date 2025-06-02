@@ -1,6 +1,5 @@
 #%% Import 
 
-import os
 import numpy as np
 import glob
 from secsy import CSgrid, CSprojection
@@ -118,8 +117,8 @@ def process_orbit(orbit, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, f_
         
         # Bin and conductance images
         wic_bI = BinnedImage(wic_pI, grid_w, inflate_uncertainty=True)
-        s12_bI = BinnedImage(s12_pI, grid_s, inflate_uncertainty=True, target_grid=grid_w, interpolate=True)
-        s13_bI = BinnedImage(s13_pI, grid_s, inflate_uncertainty=True, target_grid=grid_w, interpolate=True)
+        s12_bI = BinnedImage(s12_pI, grid_s, inflate_uncertainty=True, target_grid=grid_w)
+        s13_bI = BinnedImage(s13_pI, grid_s, inflate_uncertainty=True, target_grid=grid_w)
         cI = ConductanceImage(wic_bI, s12_bI, s13_bI, time=t)
         
         # Save to netCDF
