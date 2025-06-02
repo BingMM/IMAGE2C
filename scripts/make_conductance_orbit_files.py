@@ -212,7 +212,8 @@ Lres = dist / steps
 grid_s = CSgrid(CSprojection(position, orientation), L, L, Lres, Lres, edges = (xi_e, eta_e), R = 6481.2e3)
 print('Fine grid resolution is: ' + str(grid_w.Lres/1e3) + ' km')
 print('Coarse grid target resolution is: ' + str(target_Lres/1e3) + ' km')
-print('Coarse grid resolution is: ' + str(np.round(Lres/1e3, 2)) + ' km\n')
+print('Coarse grid resolution set to: ' + str(np.round(Lres/1e3, 2)) + ' km')
+print('Coarse grid resolution is : ' + str(grid_s.Lres/1e3) + ' km\n')
 
 #%%
 
