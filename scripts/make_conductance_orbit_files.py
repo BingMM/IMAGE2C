@@ -170,23 +170,21 @@ p_out = base + 'conductance/'
 
 #%% Fetch orbits available in all nc files
 
-# Fetch all orbits
-o_wic = [int(o[-7:-3]) for o in sorted(glob.glob(p_wic_nc + '*.nc'))]
-o_s12 = [int(o[-7:-3]) for o in sorted(glob.glob(p_s12_nc + '*.nc'))]
-o_s13 = [int(o[-7:-3]) for o in sorted(glob.glob(p_s13_nc + '*.nc'))]
+def get_orbit_list(p_nc, p_npy, sensor):
+    # Fetch all orbits
+    o = np.array([int(o[-7:-3]) for o in sorted(glob.glob(p_nc + '*.nc'))])
+    
+    # Load file with orbit quality
+    avail = np.load(p_npy)
+    print(f'{sensor}: {avail.shape[0]} nc files found. {int(np.sum(avail[:, 1]==1))} orbits useable.')
+    avail = avail[avail[:, 1]==1, 0]
+    
+    # Grab orbits
+    return o[np.isin(o, avail)]
 
-# Insert code that loads .npy orbit flags and discard orbits without flag=1
-wic_avail = np.load(base + 'wic_avail_orbit.npy')
-s12_avail = np.load(base + 's12_avail_orbit.npy')
-s13_avail = np.load(base + 's13_avail_orbit.npy')
-
-print(f'WIC: {wic_avail.shape[0]} nc files found. {int(np.sum(wic_avail[:, 1]==1))} orbits useable.')
-print(f'S12: {s12_avail.shape[0]} nc files found. {int(np.sum(s12_avail[:, 1]==1))} orbits useable.')
-print(f'S13: {s13_avail.shape[0]} nc files found. {int(np.sum(s13_avail[:, 1]==1))} orbits useable.\n')
-
-o_wic = [ow for ow, keep in zip(o_wic, wic_avail[:, 1] == 1) if keep]
-o_s12 = [ow for ow, keep in zip(o_s12, s12_avail[:, 1] == 1) if keep]
-o_s13 = [ow for ow, keep in zip(o_s13, s13_avail[:, 1] == 1) if keep]
+o_wic = get_orbit_list(p_wic_nc, base + 'wic_avail_orbit.npy', 'WIC')
+o_s12 = get_orbit_list(p_s12_nc, base + 's12_avail_orbit.npy', 'S12')
+o_s13 = get_orbit_list(p_s13_nc, base + 's13_avail_orbit.npy', 'S13')
 
 # Create list of all overlapping orbits
 o = set(o_wic) & set(o_s12) & set(o_s13)
