@@ -49,7 +49,7 @@ def find_common_times_with_indices(list1, list2, list3, tolerance=timedelta(seco
     
     return np.array(common_times), np.array(indices)
 
-def safe_apex_convert(apex, glat_row, glon_row, height=120):
+def safe_apex_convert(apex, glat_row, glon_row, height=110):
     valid = ~np.isnan(glat_row) & ~np.isnan(glon_row)
     mlat = np.full_like(glat_row, np.nan)
     mlon = np.full_like(glon_row, np.nan)
