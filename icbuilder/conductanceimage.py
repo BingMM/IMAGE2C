@@ -136,9 +136,10 @@ class ConductanceImage:
                 nc.reference_time = ref_time.strftime("%Y-%m-%dT%H:%M:%S")
 
             if self.grid and hasattr(self.grid, "projection"):
-                nc.position = self.grid.projection.position.astype(float)
-                nc.orientation = self.grid.projection.orientation
-                nc.L = self.grid.L
-                nc.W = self.grid.W
+                nc.position     = self.grid.projection.position.astype(float)
+                nc.orientation  = self.grid.projection.orientation
+                nc.L    = self.grid.L
+                nc.W    = self.grid.W
                 nc.Lres = self.grid.Lres
                 nc.Wres = self.grid.Wres
+                nc.gridR    = self.grid.R

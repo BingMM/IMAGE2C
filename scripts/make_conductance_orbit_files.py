@@ -162,6 +162,7 @@ def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, paral
 
 base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
 
+
 p_wic_nc = base + 'wic/'
 p_s12_nc = base + 's12/'
 p_s13_nc = base + 's13/'
