@@ -59,6 +59,10 @@ The code is designed to be run in the following sequence:
 
 - Ingests the NetCDF files and estimates ionospheric conductance **[1,2,4]**.
 
+### `make_conductance_figures.py`
+
+- *(Not implemented yet)*
+
 ### `make_spline_model.py`
 
 - *(Not implemented yet)*
