@@ -180,9 +180,9 @@ class ConductanceImage:
                 var = nc.createVariable(name, float, ('time', 'dim1', 'dim2'))
                 var[:] = data
 
-            for attr in ['wic_avg', 'wic_std', 's12_avg', 's12_std', 's13_avg', 
-                         's13_std', 'W0', 'dE0', 'Fe', 'dFe', 'R', 'dR', 'P', 'H', 
-                         'dP', 'dH', 'dP2', 'dH2']:
+            for attr in ['wic_avg', 's12_avg', 's13_avg', 'wic_std', 's12_std', 's13_std', 
+                         'E0', 'dE0', 'Fe', 'dFe', 'R', 'dR', 'P', 'H', 'dP', 'dH', 
+                         'dP2', 'dH2']:
                 save_var(attr, getattr(self, attr))
 
             nc.Ep = float(self.Ep)

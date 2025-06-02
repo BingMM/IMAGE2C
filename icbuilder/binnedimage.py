@@ -78,12 +78,13 @@ class BinnedImage:
                         median_val = np.median(values)
                         self.mu[i, jj, kk] = max(median_val, 0)  # zero if negative
                         self.sigma[i, jj, kk] = np.std(values)
-
+        
         if inflate_uncertainty:
             self._inflate_uncertainty()
 
         if target_grid is not None:
             self._interpolate(target_grid)
+            self.shape = self.mu.shape
 
     def _inflate_uncertainty(self, 
                              alpha_mean: float = 0.32, 
@@ -124,7 +125,7 @@ class BinnedImage:
         self.mu_ = np.copy(self.mu)
         self.sigma_ = np.copy(self.sigma)
 
-        time_len = self.mu.shape[0]
+        time_len = self.shape[0]
         ny, nx = target_grid.shape
 
         self.mu = np.full((time_len, ny, nx), np.nan)

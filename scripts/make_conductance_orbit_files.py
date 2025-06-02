@@ -70,7 +70,7 @@ def process_orbit(orbit, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, f_
         t0_wic = datetime.strptime(b''.join(wic_nc.variables['t_start'].data).decode('utf8'), '%Y-%m-%dT%H:%M:%S')
         t0_s12 = datetime.strptime(b''.join(s12_nc.variables['t_start'].data).decode('utf8'), '%Y-%m-%dT%H:%M:%S')
         t0_s13 = datetime.strptime(b''.join(s13_nc.variables['t_start'].data).decode('utf8'), '%Y-%m-%dT%H:%M:%S')
-        
+
         # Get time for each sensor
         t_wic = [t0_wic + timedelta(seconds=int(sec)) for sec in wic_nc.variables['date'][:]]
         t_s12 = [t0_s12 + timedelta(seconds=int(sec)) for sec in s12_nc.variables['date'][:]]
@@ -78,53 +78,53 @@ def process_orbit(orbit, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, f_
         
         # Get common times and their indices
         t, indices = find_common_times_with_indices(t_wic, t_s12, t_s13)
-        
+
         # Remove completely empty frames
         empty = np.all(np.isnan(wic_nc.variables['mlat'][indices[:, 0]]), axis=(1,2))
         empty |= np.all(np.isnan(s12_nc.variables['mlat'][indices[:, 1]]), axis=(1,2))
         empty |= np.all(np.isnan(s13_nc.variables['mlat'][indices[:, 2]]), axis=(1,2))
         t, indices = t[~empty], indices[~empty, :]
-        
+
         # Extract data
         wic_pI = PreImage(wic_nc, indices[:, 0])
         s12_pI = PreImage(s12_nc, indices[:, 1])
         s13_pI = PreImage(s13_nc, indices[:, 2])
-        
+
         # Close files
         wic_nc.close()
         s12_nc.close()
         s13_nc.close()
-        
+
         # APEX conversion
         for i, ti in enumerate(t):
             apex = apexpy.Apex(ti)
             wic_pI.mlat[i], wic_pI.mlon[i] = safe_apex_convert(apex, wic_pI.glat[i], wic_pI.glon[i])
             s12_pI.mlat[i], s12_pI.mlon[i] = safe_apex_convert(apex, s12_pI.glat[i], s12_pI.glon[i])
             s13_pI.mlat[i], s13_pI.mlon[i] = safe_apex_convert(apex, s13_pI.glat[i], s13_pI.glon[i])
-        
+
         # Fullness check
         wic_p = wic_pI.percent_full(grid_w)
         s12_p = s12_pI.percent_full(grid_s)
         s13_p = s13_pI.percent_full(grid_s)
         f = (wic_p >= f_thres) & (s12_p >= f_thres) & (s13_p >= f_thres)
-        
+
         t = t[f]
         wic_pI.discard(f)
         s12_pI.discard(f)
         s13_pI.discard(f)
-        
+
         # Bin and conductance images
         wic_bI = BinnedImage(wic_pI, grid_w, inflate_uncertainty=True)
         s12_bI = BinnedImage(s12_pI, grid_s, inflate_uncertainty=True, target_grid=grid_w)
         s13_bI = BinnedImage(s13_pI, grid_s, inflate_uncertainty=True, target_grid=grid_w)
         cI = ConductanceImage(wic_bI, s12_bI, s13_bI, time=t)
-        
         # Save to netCDF
         out_path = f'{p_out}or_{orbit:04d}.nc'
         cI.to_nc(out_path)
         return orbit  # Success
     except Exception as e:
-        return f"Failed orbit {orbit}: {e}"
+        print(f"Failed orbit {orbit}: {e}")
+        return None
 
 def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=True, n_processes=None):
 
@@ -157,8 +157,9 @@ def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, paral
 
 #%% Paths
 
+base = '/home/bing/Dropbox/work/code/repos/icBuilder/example_data/'
 #base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
-base = '/disk/IMAGE_FUV/fuv/'
+#base = '/disk/IMAGE_FUV/fuv/'
 
 
 p_wic_nc = base + 'wic/'
@@ -215,7 +216,7 @@ print('Coarse grid resolution is : ' + str(grid_s.Lres/1e3) + ' km\n')
 
 #%%
 
-#results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=False)
-results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=True, n_processes=96)
+results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=False)
+#results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=True, n_processes=96)
 
 
