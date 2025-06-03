@@ -8,10 +8,12 @@ import fuvpy as fuv
 import matplotlib.pyplot as plt
 from polplot import pp
 import matplotlib.gridspec as gridspec
+from tqdm import tqdm
 
 #%% Paths
 
 base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
+base = '/disk/IMAGE_FUV/fuv/'
 
 p_wic_nc = base + 'wic/'
 p_s12_nc = base + 's12/'
@@ -31,7 +33,7 @@ o_s13 = [int(o[-7:-3]) for o in sorted(glob.glob(p_s13_nc + '*.nc'))]
 #%% Fun
 
 def plot_br(inpath, outpath, orbits, sensor):
-    for orbit in orbits:
+    for orbit in tqdm(orbits, total=len(orbits), desc=sensor):
         # Load nc orbit file for sensor
         so = xr.open_dataset(inpath + sensor + '_or' + str(orbit).zfill(4) + '.nc').copy()
         # Make folder
