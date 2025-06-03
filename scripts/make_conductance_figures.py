@@ -93,5 +93,5 @@ for orbit in tqdm(o, total=len(o)):
     
     for i in range(cI.shape[0]):
         plot(cI, i, c_scales, lat, lt)
-        plt.savefig(p_out_o + f'{i}.png', bbox_inches='tight')
+        plt.savefig(p_out_o + f'{str(i).zfill(3)}.png', bbox_inches='tight')
         plt.close('all')
