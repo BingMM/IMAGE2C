@@ -3,17 +3,16 @@
 import os
 import numpy as np
 import glob
-import xarray as xr
-import fuvpy as fuv
 import matplotlib.pyplot as plt
 from polplot import pp
-import matplotlib.gridspec as gridspec
+from tqdm import tqdm
 
 from icreader import ConductanceImage
 
 #%% Paths
 
 base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
+base = '/disk/IMAGE_FUV/fuv/'
 
 p_in = base + 'conductance/'
 p_out = base + 'figures/conductance/'
@@ -23,129 +22,76 @@ p_out = base + 'figures/conductance/'
 # Fetch all orbits
 o = [int(o[-7:-3]) for o in sorted(glob.glob(p_in + '*.nc'))]
 
-#%%
+#%% Func
 
-R dR
-E dE
-F dF
-H dH
-P dP
-
-#%% Fun
-
-def plot_br(inpath, outpath, orbits, sensor):
-    for orbit in orbits:
-        # Load nc orbit file for sensor
-        so = xr.open_dataset(inpath + sensor + '_or' + str(orbit).zfill(4) + '.nc').copy()
-        # Make folder
-        foldername = outpath + 'or_' + str(orbit).zfill(4)
-        os.makedirs(foldername, exist_ok=True)
-        print(foldername)
-        # Loop over each date        
-        for i in range(so.dims['date']):
-            s = so.isel(date=i)
-            figname = foldername + '/t' + str(i).zfill(3) + '.png'
-            make_plot(s, sensor, figname)
-
-def make_plot(s, sensor, figname):
-    isensor = np.argmax(np.isin(['wic', 's13', 's12'], sensor))
+def get_c_scales(cI):
+    c_scales = {'wicm': (0, np.round(np.nanmax(cI.wic_avg)+1)),
+                'wics': (0, np.round(np.nanmax(cI.wic_std)+1)),
+                's12m': (0, np.round(np.nanmax(cI.s12_avg)+1)),
+                's12s': (0, np.round(np.nanmax(cI.s12_std)+1)),
+                's13m': (0, np.round(np.nanmax(cI.s13_avg)+1)),
+                's13s': (0, np.round(np.nanmax(cI.s13_std)+1)),
+                'E0':   (0,  25),
+                'dE0':  (0, np.round(np.nanmax(cI.dE0)+1)),
+                'Fe':   (0, np.round(np.nanmax(cI.Fe)+1)),
+                'dFe':  (0, np.round(np.nanmax(cI.dFe)+1)),
+                'R':    (0, 150),
+                'dR':   (0, np.round(5*np.median(cI.dR[~np.isnan(cI.dR)])+1)),
+                'H':    (0, np.round(np.nanmax(cI.H)+1)),
+                'dH':   (0, np.round(np.nanmax(cI.dH)+1)),
+                'P':    (0, np.round(np.nanmax(cI.P)+1)),
+                'dP':   (0, np.round(np.nanmax(cI.dP)+1))
+                }
+    return c_scales
     
-    plt.ioff()
-    fig = plt.figure(figsize=(15,9))
-    gs = gridspec.GridSpec(nrows=2,ncols=4,hspace=0.3,wspace=0.01)
+def plot(cI, i, c_scales, lat, lt):    
         
-    ax = fig.add_subplot(gs[1, 0])
-    ax.axis('off')  # Turn off the axis for this subplot    
-    ax.text(.5, .6, ['WIC', 'SI12', 'SI13'][isensor], fontsize=10, va='center', ha='center', transform=ax.transAxes)
-    ax.text(.5, .5, 'Orbit ' + figname[-13:-9], fontsize=10, va='center', ha='center', transform=ax.transAxes)
-    ax.text(.5, .4, np.datetime_as_string(s.date.values, 's'), fontsize=10, va='center', ha='center', transform=ax.transAxes)
-        
-    ## img ##
-    vmin = np.array([0, 0, 0])[isensor]
-    vmax = np.array([5000, 40, 20])[isensor]
-    pax = pp(plt.subplot(gs[0,0]),minlat=50)
-    fuv.plotimg(s,'img',pax=pax,crange=(vmin,vmax),cmap='magma')
-    cbaxes = pax.ax.inset_axes([.2,.0,.6,.03])
-    cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='max')
-    cb.set_label('Projected image [counts]')
-    pax.ax.set_title('BS',rotation='vertical',x=-0.04,y=0.5,va='center',ha='center')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 18, '18',va='center',ha='right',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
+    fig, axs = plt.subplots(3, 6, figsize=(30, 15))
+    plt.subplots_adjust(wspace=0.05, hspace=0.05)
+    axes = axs.flatten()[:-2]
+    axs[2, 4].set_axis_off()
+    axs[2, 5].set_axis_off()
+    
+    var = [cI.wic_avg[i], cI.wic_std[i], cI.R[i],  cI.dR[i],  cI.H[i], cI.dH[i],
+           cI.s13_avg[i], cI.s13_std[i], cI.E0[i], cI.dE0[i], cI.P[i], cI.dP[i],
+           cI.s12_avg[i], cI.s12_std[i], cI.Fe[i], cI.dFe[i]]
+    
+    cs = [c_scales['wicm'], c_scales['wics'], c_scales['R'],  c_scales['dR'],  c_scales['H'], c_scales['dH'],
+          c_scales['s13m'], c_scales['s13s'], c_scales['E0'], c_scales['dE0'], c_scales['P'], c_scales['dP'],
+          c_scales['s12m'], c_scales['s12s'], c_scales['Fe'], c_scales['dFe']]
+    
+    tit = ['avg WIC counts', 'std WIC counts', 'WIC*/S13* (R)', 'R std', 'Hall', 'Hall std',
+            'avg S13 counts', 'std S13 counts', 'E0', 'E0 std', 'Pedersen', 'Pedersen std',
+            'avg S12 counts', 'std S12 counts', 'Fe', 'Fe std']
+    
+    for j, (ax, var_, cs_, tit_) in enumerate(zip(axes, var, cs, tit)):
+        pax = pp(ax)
+        if j == 12:
+            pax.writeLTlabels(fontsize=16)
+            ax.text(.85, .1, '50$^{\circ}$', ha='center', va='center', fontsize=16, transform=ax.transAxes)
+        pax.plotimg(lat, lt, var_, crange=cs_)
+        ax.set_title(tit_, fontsize=18)
+        ax.text(.85, .85, str(int(cs_[-1])), ha='left', va='center', fontsize=16, transform=ax.transAxes)
+    
+    axs[0,2].text(1.1, 1.2, cI.time[i], ha='center', va='center', fontsize=20, transform=axs[0,2].transAxes)
+    
+#%% Plot
 
-    # Dayglow
-    pax = pp(plt.subplot(gs[0,1]),minlat=50)
-    fuv.plotimg(s,'dgmodel',pax=pax,crange=(vmin,vmax),cmap='magma')
-    cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
-    cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='max')
-    cb.set_label('BS model [counts]')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
-
-    # Corr
-    vmin = np.array([-1000, -15, -5])[isensor]
-    vmax = np.array([1000, 15, 5])[isensor]
-    pax = pp(plt.subplot(gs[0,2]),minlat=50)
-    fuv.plotimg(s,'dgimg',pax=pax,crange=(vmin,vmax),cmap='coolwarm')
-    cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
-    cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='both')
-    cb.set_label('BS corrected image [counts]')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
-
-    #Weight
-    pax = pp(plt.subplot(gs[0,3]),minlat=50)
-    fuv.plotimg(s,'dgweight',pax=pax,crange=(0,1))
-    cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
-    cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal')
-    cb.set_label('Weights')
-    pax.write(50,  6, '06',va='center',ha='left',fontsize=8)
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
-
-    # Dayglow (SH)
-    vmin = np.array([-1000, -15, -5])[isensor]
-    vmax = np.array([1000, 15, 5])[isensor]
-    pax = pp(plt.subplot(gs[1,1]),minlat=50)
-    fuv.plotimg(s,'shmodel',pax=pax,crange=(vmin,vmax),cmap='coolwarm')
-    cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
-    cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='both')
-    cb.set_label('SH model [counts]')
-    pax.ax.set_title('SH',rotation='vertical',x=-0.04,y=0.5,va='center',ha='center')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 18, '18',va='center',ha='right',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
-
-    # Corr
-    pax = pp(plt.subplot(gs[1,2]),minlat=50)
-    fuv.plotimg(s,'shimg',pax=pax,crange=(vmin,vmax),cmap='coolwarm')
-    cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
-    cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='both')
-    cb.set_label('SH corrected image [counts]')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
-
-    #Weight
-    pax = pp(plt.subplot(gs[1,3]),minlat=50)
-    fuv.plotimg(s,'shweight',pax=pax,crange=(0,1))
-    cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
-    cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal')
-    cb.set_label('Weights')
-    pax.write(50,  6, '06',va='center',ha='left',fontsize=8)
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
-
-    plt.savefig(figname, bbox_inches='tight', dpi = 300)
-    plt.close('all')
-    plt.close()
-
-#%%
-
-plot_br(p_wic_nc, p_wic_out, o_wic, 'wic')
-plot_br(p_s12_nc, p_s12_out, o_s12, 's12')
-plot_br(p_s13_nc, p_s13_out, o_s13, 's13')
-
-
-
-
-
+plt.ioff()
+for orbit in tqdm(o, total=len(o)):
+    filename = p_in + f'or_{str(orbit).zfill(4)}.nc'
+    
+    cI = ConductanceImage(filename)
+    
+    c_scales = get_c_scales(cI)
+    
+    lat = cI.grid.lat
+    lt = (cI.grid.lon/15)%24
+    
+    p_out_o = p_out + f'or_{str(orbit).zfill(4)}/'
+    os.makedirs(p_out_o, exist_ok=True)
+    
+    for i in range(cI.shape[0]):
+        plot(cI, i, c_scales, lat, lt)
+        plt.savefig(p_out_o + f'{i}.png', bbox_inches='tight')
+        plt.close('all')
