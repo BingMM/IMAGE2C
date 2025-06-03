@@ -20,11 +20,10 @@ The main purpose of this codebase is to document the data processing procedure. 
 
 ## Installation
 
-
-mamba activate your_environment 
-git clone https://github.com/BingMM/icBuilder.git 
-cd icBuilder 
-pip install -e . 
+mamba activate your_environment  
+git clone https://github.com/BingMM/icBuilder.git  
+cd icBuilder  
+pip install -e .
 
 ## Step-by-Step Guide
 
