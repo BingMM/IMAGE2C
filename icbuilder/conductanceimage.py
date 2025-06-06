@@ -148,13 +148,16 @@ class ConductanceImage:
 
             varE0Fe = 0  # Placeholder for covariance
             P, H = ped(E0, Fe), hall(E0, Fe)
-
+            '''
             if Fe == 0:
                 dP = dP2 = 0.4 * P
                 dH = dH2 = 0.4 * H
             else:
                 dP, dP2 = peduncertainty(E0, Fe, dE0, dFe, varE0Fe)
                 dH, dH2 = halluncertainty(E0, Fe, dE0, dFe, varE0Fe)
+            '''
+            dP, dP2 = peduncertainty(E0, Fe, dE0, dFe, varE0Fe)
+            dH, dH2 = halluncertainty(E0, Fe, dE0, dFe, varE0Fe)
             
             self.P[i, j, k], self.H[i, j, k] = P, H
             self.dP[i, j, k], self.dH[i, j, k] = dP, dH
