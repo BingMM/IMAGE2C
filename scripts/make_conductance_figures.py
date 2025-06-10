@@ -94,7 +94,7 @@ for orbit in tqdm(o, total=len(o)):
     os.makedirs(p_out_o, exist_ok=True)
     
     for i in range(cI.shape[0]):
-    	try:
+        try:
             plot(cI, i, c_scales, lat, lt)
             plt.savefig(p_out_o + f'{str(i).zfill(3)}.png', bbox_inches='tight')
         except:
