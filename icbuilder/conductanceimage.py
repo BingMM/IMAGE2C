@@ -79,14 +79,15 @@ class ConductanceImage:
         self.grid = dcopy(wic.grid)
         self.shape = wic.shape
         
-        self._store_binned_statistics(wic, s12, s13)
+        self._store_binned_counts(wic, s12, s13)
+        self._store_binned_weights(wic, s12, s13)
         self._initialize_arrays()
         self._compute_conductance()
 
         if out_fn:
             self.to_nc(out_fn)
 
-    def _store_binned_statistics(self, wic: BinnedImage, s12: BinnedImage, s13: BinnedImage):
+    def _store_binned_counts(self, wic: BinnedImage, s12: BinnedImage, s13: BinnedImage):
         """
         Stores the average and standard deviation from each BinnedImage.
         """
@@ -96,6 +97,14 @@ class ConductanceImage:
         self.s12_std = s12.sigma
         self.s13_avg = s13.mu
         self.s13_std = s13.sigma
+    
+    def _store_binned_weights(self, wic: BinnedImage, s12: BinnedImage, s13: BinnedImage):
+        """
+        Stores the weights from each BinnedImage.
+        """
+        self.wic_w = wic.w
+        self.s12_w = s12.w
+        self.s13_w = s13.w
 
     def _initialize_arrays(self):
         """
@@ -111,8 +120,6 @@ class ConductanceImage:
         self.H      = np.full(self.shape, np.nan)
         self.dP     = np.full(self.shape, np.nan)
         self.dH     = np.full(self.shape, np.nan)
-        self.dP2    = np.full(self.shape, np.nan)
-        self.dH2    = np.full(self.shape, np.nan)
 
     def _compute_conductance(self):
         """
@@ -148,17 +155,14 @@ class ConductanceImage:
 
             varE0Fe = 0  # Placeholder for covariance
             P, H = ped(E0, Fe), hall(E0, Fe)
-
-            if Fe == 0:
-                dP = dP2 = 0.4 * P
-                dH = dH2 = 0.4 * H
-            else:
-                dP, dP2 = peduncertainty(E0, Fe, dE0, dFe, varE0Fe)
-                dH, dH2 = halluncertainty(E0, Fe, dE0, dFe, varE0Fe)
+            
+            dP = peduncertainty( E0, Fe, dE0, dFe, varE0Fe)
+            dH = halluncertainty(E0, Fe, dE0, dFe, varE0Fe)
             
             self.P[i, j, k], self.H[i, j, k] = P, H
             self.dP[i, j, k], self.dH[i, j, k] = dP, dH
-            self.dP2[i, j, k], self.dH2[i, j, k] = dP2, dH2
+
+        self.w = (self.wic_w + self.s12_w + self.s13_w)/3
 
     def to_nc(self, filename: str):
         """
@@ -181,8 +185,7 @@ class ConductanceImage:
                 var[:] = data
 
             for attr in ['wic_avg', 's12_avg', 's13_avg', 'wic_std', 's12_std', 's13_std', 
-                         'E0', 'dE0', 'Fe', 'dFe', 'R', 'dR', 'P', 'H', 'dP', 'dH', 
-                         'dP2', 'dH2']:
+                         'E0', 'dE0', 'Fe', 'dFe', 'R', 'dR', 'P', 'H', 'dP', 'dH', 'w']:
                 save_var(attr, getattr(self, attr))
 
             nc.Ep = float(self.Ep)

@@ -32,6 +32,10 @@ class PreImage:
         Projected image in SH (spherical harmonics) geometry [time, y, x].
     dgmodel : np.ndarray
         Model image in detector geometry [time, y, x].
+    shweight : np.ndarray
+        IRLS weight for SH fit [time, y, x].
+    dgweight : np.ndarray
+        IRLS weight for dayglow fit [time, y, x].
     shape : tuple
         Shape of the image arrays.
     index : Optional[list[int] or np.ndarray]
@@ -53,7 +57,7 @@ class PreImage:
         """
         self.index = index
 
-        var_names = ['mlat', 'mlon', 'glat', 'glon', 'dgimg', 'shimg', 'dgmodel']
+        var_names = ['mlat', 'mlon', 'glat', 'glon', 'dgimg', 'shimg', 'dgmodel', 'shweight', 'dgweight']
         for name in var_names:
             var_data = ncdf.variables[name]
             data = var_data[...] if index is None else var_data[index, :, :]
@@ -92,6 +96,38 @@ class PreImage:
             dayglow subtracted image.
         """
         return self.dgimg[i, :, :]
+    
+    def get_dgw(self, i: int) -> NDArray[np.float_]:
+        """
+        Return IRLS weights from dayglow subtraction for frame i.
+
+        Parameters
+        ----------
+        i : int
+            Frame index.
+
+        Returns
+        -------
+        np.ndarray
+            weights.
+        """
+        return self.dgweight[i, :, :]
+
+    def get_shw(self, i: int) -> NDArray[np.float_]:
+        """
+        Return IRLS weights from SH fit for frame i.
+
+        Parameters
+        ----------
+        i : int
+            Frame index.
+
+        Returns
+        -------
+        np.ndarray
+            weights.
+        """
+        return self.shweight[i, :, :]
 
     def get_model(self, i: int) -> NDArray[np.float_]:
         """

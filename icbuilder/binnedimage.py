@@ -60,25 +60,54 @@ class BinnedImage:
         self.counts = np.zeros((time_len, ny, nx))
         self.mu = np.full_like(self.counts, np.nan)
         self.sigma = np.full_like(self.counts, np.nan)
+        self.w = np.full_like(self.counts, np.nan)
         self.shape = self.counts.shape
-
+        
         for i in range(time_len):
-            lat, lon = pI.get_mcoords(i)
-            f = grid.ingrid(lon, lat)
-            self.counts[i] = grid.count(lon[f], lat[f])
+            lat, lon = pI.get_mcoords(i) # Get magnetic coordinates
+            f = grid.ingrid(lon, lat) # Find data inside the CS grid
+            self.counts[i] = grid.count(lon[f], lat[f]) # Count the number of pixels in each bin
 
-            shimg = pI.get_shimg(i)
-            j, k = grid.bin_index(lon, lat)
+            shimg = pI.get_shimg(i) # Get the SH corrected image
+            w = pI.get_dgw(i) * pI.get_shw(i) # Get and combine weights
 
+            j, k = grid.bin_index(lon, lat) # Make bin index
             for jj in range(ny):
                 for kk in range(nx):
+                    
+                    # id
+                    id_ = (i, jj, kk)
+                    
+                    # If less than 2 pixels in bin, continue
+                    if self.counts[id_] < 2:
+                        continue
+                    
+                    # Get index of data in a single bin
                     mask = (j == jj) & (k == kk)
-                    if np.any(mask) and self.counts[i, jj, kk] > 1:
-                        values = shimg.flatten()[mask]
-                        median_val = np.median(values)
-                        self.mu[i, jj, kk] = max(median_val, 0)  # zero if negative
-                        self.sigma[i, jj, kk] = np.std(values)
-        
+                    
+                    # Grab values in the (jj, kk) bin
+                    values = shimg.flatten()[mask]
+                    
+                    # Any NaN?
+                    fnan = np.isnan(values)
+                    
+                    # If less than 2 non-NaN values, continue
+                    if np.sum(~fnan) < 2:
+                        continue
+                    
+                    # Correct counts based on NaN values
+                    if np.any(fnan):
+                        self.counts[id_] -= np.sum(fnan)
+                        
+                    # Calculate NaN safe statistics
+                    median_val = np.nanmedian(values)
+                    self.mu[id_] = max(median_val, 0)  # zero if negative
+                    self.sigma[id_] = np.nanstd(values)
+                        
+                    # Grab weights
+                    values = w.flatten()[mask]
+                    self.w[id_] = 1/np.nansum(1/values) # Harmonic mean
+                
         if inflate_uncertainty:
             self._inflate_uncertainty()
 
@@ -122,14 +151,16 @@ class BinnedImage:
         target_grid : CSgrid
             The grid to interpolate onto.
         """
-        self.mu_ = np.copy(self.mu)
+        self.mu_    = np.copy(self.mu)
         self.sigma_ = np.copy(self.sigma)
+        self.w_     = np.copy(self.w)
 
-        time_len = self.shape[0]
-        ny, nx = target_grid.shape
+        time_len    = self.shape[0]
+        ny, nx      = target_grid.shape
 
-        self.mu = np.full((time_len, ny, nx), np.nan)
-        self.sigma = np.full((time_len, ny, nx), np.nan)
+        self.mu     = np.full((time_len, ny, nx), np.nan)
+        self.sigma  = np.full((time_len, ny, nx), np.nan)
+        self.w      = np.full((time_len, ny, nx), np.nan)
 
         for i in range(time_len):
             # Interpolate mu
@@ -142,6 +173,12 @@ class BinnedImage:
             mask = ~np.isnan(self.sigma_[i])
             self.sigma[i] = griddata(
                 (self.grid.xi[mask], self.grid.eta[mask]), self.sigma_[i][mask],
+                (target_grid.xi, target_grid.eta), method='linear', fill_value=np.nan
+            )
+            # Interpolate w
+            mask = ~np.isnan(self.w_[i])
+            self.w[i] = griddata(
+                (self.grid.xi[mask], self.grid.eta[mask]), self.w_[i][mask],
                 (target_grid.xi, target_grid.eta), method='linear', fill_value=np.nan
             )
 
@@ -159,4 +196,5 @@ class BinnedImage:
         self.counts = self.counts[f]
         self.mu = self.mu[f]
         self.sigma = self.sigma[f]
+        self.w = self.w[f]
         self.shape = self.mu.shape
