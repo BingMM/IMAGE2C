@@ -157,9 +157,9 @@ def run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, paral
 
 #%% Paths
 
-#base = '/home/bing/Dropbox/work/code/repos/icBuilder/example_data/'
+base = '/home/bing/Dropbox/work/code/repos/icBuilder/example_data/'
 #base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
-base = '/disk/IMAGE_FUV/fuv/'
+#base = '/disk/IMAGE_FUV/fuv/'
 
 
 p_wic_nc = base + 'wic/'
@@ -214,7 +214,7 @@ print('Coarse grid resolution is : ' + str(grid_s.Lres/1e3) + ' km\n')
 
 #%%
 
-#results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=False)
-results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=True, n_processes=96)
+results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=False)
+#results = run_all_orbits(o, p_wic_nc, p_s12_nc, p_s13_nc, p_out, grid_w, grid_s, parallel=True, n_processes=96)
 
 

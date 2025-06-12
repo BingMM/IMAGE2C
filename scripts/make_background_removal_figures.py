@@ -12,8 +12,9 @@ from tqdm import tqdm
 
 #%% Paths
 
-base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
-base = '/disk/IMAGE_FUV/fuv/'
+base = '/home/bing/Dropbox/work/code/repos/icBuilder/example_data/'
+#base = '/Home/siv32/mih008/repos/icBuilder/example_data/'
+#base = '/disk/IMAGE_FUV/fuv/'
 
 p_wic_nc = base + 'wic/'
 p_s12_nc = base + 's12/'
@@ -47,6 +48,11 @@ def plot_br(inpath, outpath, orbits, sensor):
             make_plot(s, sensor, figname)
 
 def make_plot(s, sensor, figname):
+    
+    fs0 = 20
+    fs1 = 16
+    fs2 = 12
+    
     isensor = np.argmax(np.isin(['wic', 's13', 's12'], sensor))
     
     plt.ioff()
@@ -55,9 +61,9 @@ def make_plot(s, sensor, figname):
         
     ax = fig.add_subplot(gs[1, 0])
     ax.axis('off')  # Turn off the axis for this subplot    
-    ax.text(.5, .6, ['WIC', 'SI12', 'SI13'][isensor], fontsize=10, va='center', ha='center', transform=ax.transAxes)
-    ax.text(.5, .5, 'Orbit ' + figname[-13:-9], fontsize=10, va='center', ha='center', transform=ax.transAxes)
-    ax.text(.5, .4, np.datetime_as_string(s.date.values, 's'), fontsize=10, va='center', ha='center', transform=ax.transAxes)
+    ax.text(.45, .6, ['WIC', 'SI12', 'SI13'][isensor], fontsize=fs0, va='center', ha='center', transform=ax.transAxes)
+    ax.text(.45, .5, 'Orbit ' + figname[-13:-9], fontsize=fs0, va='center', ha='center', transform=ax.transAxes)
+    ax.text(.45, .4, np.datetime_as_string(s.date.values, 's'), fontsize=fs0, va='center', ha='center', transform=ax.transAxes)
         
     ## img ##
     vmin = np.array([0, 0, 0])[isensor]
@@ -66,20 +72,20 @@ def make_plot(s, sensor, figname):
     fuv.plotimg(s,'img',pax=pax,crange=(vmin,vmax),cmap='magma')
     cbaxes = pax.ax.inset_axes([.2,.0,.6,.03])
     cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='max')
-    cb.set_label('Projected image [counts]')
-    pax.ax.set_title('BS',rotation='vertical',x=-0.04,y=0.5,va='center',ha='center')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 18, '18',va='center',ha='right',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
+    cb.set_label('Projected image [counts]', fontsize=fs1)
+    pax.ax.set_title('BS',rotation='vertical', x=-0.055,y=0.48, va='center',ha='center')
+    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=fs2)
+    pax.write(50, 18, '18',va='center',ha='right',fontsize=fs2)
+    pax.write(50, 9, '50$^{\circ}$',va='center',ha='center',fontsize=fs2)
 
     # Dayglow
     pax = pp(plt.subplot(gs[0,1]),minlat=50)
     fuv.plotimg(s,'dgmodel',pax=pax,crange=(vmin,vmax),cmap='magma')
     cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
     cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='max')
-    cb.set_label('BS model [counts]')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
+    cb.set_label('BS model [counts]', fontsize=fs1)
+    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=fs2)
+    pax.write(50, 9, '50$^{\circ}$',va='center',ha='center',fontsize=fs2)
 
     # Corr
     vmin = np.array([-1000, -15, -5])[isensor]
@@ -88,19 +94,19 @@ def make_plot(s, sensor, figname):
     fuv.plotimg(s,'dgimg',pax=pax,crange=(vmin,vmax),cmap='coolwarm')
     cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
     cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='both')
-    cb.set_label('BS corrected image [counts]')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
+    cb.set_label('BS corrected image [counts]', fontsize=fs1)
+    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=fs2)
+    pax.write(50, 9, '50$^{\circ}$',va='center',ha='center',fontsize=fs2)
 
     #Weight
     pax = pp(plt.subplot(gs[0,3]),minlat=50)
     fuv.plotimg(s,'dgweight',pax=pax,crange=(0,1))
     cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
     cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal')
-    cb.set_label('Weights')
-    pax.write(50,  6, '06',va='center',ha='left',fontsize=8)
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
+    cb.set_label('Weights', fontsize=fs1)
+    pax.write(50,  6, '06',va='center',ha='left',fontsize=fs2)
+    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=fs2)
+    pax.write(50, 9, '50$^{\circ}$',va='center',ha='center',fontsize=fs2)
 
     # Dayglow (SH)
     vmin = np.array([-1000, -15, -5])[isensor]
@@ -109,30 +115,30 @@ def make_plot(s, sensor, figname):
     fuv.plotimg(s,'shmodel',pax=pax,crange=(vmin,vmax),cmap='coolwarm')
     cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
     cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='both')
-    cb.set_label('SH model [counts]')
-    pax.ax.set_title('SH',rotation='vertical',x=-0.04,y=0.5,va='center',ha='center')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 18, '18',va='center',ha='right',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
+    cb.set_label('SH model [counts]', fontsize=fs1)
+    pax.ax.set_title('SH',rotation='vertical',x=-0.055,y=0.48,va='center',ha='center')
+    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=fs2)
+    pax.write(50, 18, '18',va='center',ha='right',fontsize=fs2)
+    pax.write(50, 9, '50$^{\circ}$',va='center',ha='center',fontsize=fs2)
 
     # Corr
     pax = pp(plt.subplot(gs[1,2]),minlat=50)
     fuv.plotimg(s,'shimg',pax=pax,crange=(vmin,vmax),cmap='coolwarm')
     cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
     cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal',extend='both')
-    cb.set_label('SH corrected image [counts]')
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
+    cb.set_label('SH corrected image [counts]', fontsize=fs1)
+    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=fs2)
+    pax.write(50, 9, '50$^{\circ}$',va='center',ha='center',fontsize=fs2)
 
     #Weight
     pax = pp(plt.subplot(gs[1,3]),minlat=50)
     fuv.plotimg(s,'shweight',pax=pax,crange=(0,1))
     cbaxes = pax.ax.inset_axes([.2,.0,.6,.03]) 
     cb = plt.colorbar(pax.ax.collections[0],cax=cbaxes, orientation='horizontal')
-    cb.set_label('Weights')
-    pax.write(50,  6, '06',va='center',ha='left',fontsize=8)
-    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=8)
-    pax.write(50, 9, '50',va='center',ha='center',fontsize=8)
+    cb.set_label('Weights', fontsize=fs1)
+    pax.write(50,  6, '06',va='center',ha='left',fontsize=fs2)
+    pax.write(50, 12, '12',va='bottom',ha='center',fontsize=fs2)
+    pax.write(50, 9, '50$^{\circ}$',va='center',ha='center',fontsize=fs2)
 
     plt.savefig(figname, bbox_inches='tight', dpi = 300)
     plt.close('all')

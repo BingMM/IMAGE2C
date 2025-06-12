@@ -8,7 +8,6 @@ from copy import deepcopy as dcopy
 from scipy.stats import t, chi2
 from scipy.interpolate import griddata
 from .preimage import PreImage
-import matplotlib.pyplot as plt
 
 #%% BinnedImage class
 
