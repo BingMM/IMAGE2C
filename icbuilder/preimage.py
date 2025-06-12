@@ -187,7 +187,7 @@ class PreImage:
         f : list[int] or np.ndarray
             Indices of frames to retain.
         """
-        for name in ['mlat', 'mlon', 'glat', 'glon', 'dgimg', 'shimg', 'dgmodel']:
+        for name in ['mlat', 'mlon', 'glat', 'glon', 'dgimg', 'shimg', 'dgmodel', 'shweight', 'dgweight']:
             setattr(self, name, getattr(self, name)[f, :, :])
 
         self.shape = self.mlat.shape

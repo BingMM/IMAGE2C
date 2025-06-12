@@ -8,6 +8,7 @@ from copy import deepcopy as dcopy
 from scipy.stats import t, chi2
 from scipy.interpolate import griddata
 from .preimage import PreImage
+import matplotlib.pyplot as plt
 
 #%% BinnedImage class
 
@@ -106,8 +107,8 @@ class BinnedImage:
                         
                     # Grab weights
                     values = w.flatten()[mask]
-                    self.w[id_] = 1/np.nansum(1/values) # Harmonic mean
-                
+                    self.w[id_] = np.nanmedian(values)
+                            
         if inflate_uncertainty:
             self._inflate_uncertainty()
 
